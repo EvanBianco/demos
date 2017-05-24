@@ -1,10 +1,9 @@
 import numpy as np
 #dat_dir = '../../../'
-fname = '/Users/Evan/Desktop/seismic_cube.npy'
+fname = 'seismic_cube.npy'
 dat_file = fname
 data = np.load(dat_file)
 nILnXL, nt = data.shape
-print (data.shape)
 
 # Need to know:
 nIL = 194  # number of inlines
@@ -16,25 +15,23 @@ data = np.reshape(data, newshape = (nIL, nXL, nt))
 norm = max((np.abs(np.amax(data)), np.abs(np.amin(data))))
 
 new_data = data.astype('float16')
-new_data /= -2*norm
+
+# A sloppy way to manipulate amplitude values so they
+# go from 0-255 as integers to display on graphics card.
+new_data /= -2 * norm
 new_data = 0.5 + new_data
 new_data = 255 * new_data
 new_data = new_data[:, :, :450]
 vis_data = new_data.astype('int16')
-vol_data = np.flipud(np.rollaxis(vis_data, 2))
+
+vol_data = np.flipud(np.rollaxis(vis_data, 2))  # data to send to renderer
 
 ###
 ### Make figure
 ###
-
 from vispy import io, plot as vp
-fig = vp.Fig(
-			#bgcolor='black', size=(800, 800), show=False
-			)
-
-
-clim = [130,200]
+fig = vp.Fig()
+clim = [130,200]  # This is a hack to scale the colors to something pleasing
 vol_pw = fig[0, 0]
 vol_pw.volume(vol_data, clim=clim, cmap='grays')
-
 fig.show(run=True)
